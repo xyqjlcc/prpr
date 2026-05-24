@@ -1,33 +1,36 @@
 name: Build PRPR APK
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android
-          
-     - name: Setup Android
-  uses: android-actions/setup-android@v3
-  with:
-    packages: 'cmdline-tools;latest,build-tools;33.0.2,ndk;25.2.9519653,android-33'
-          
-      - name: Install cargo-apk
-        run: cargo install cargo-apk --locked
-          
-      - name: Build APK
-        run: |
-          cd prpr-client-main
-          cargo apk build --release --bin prpr-client-main
-          
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: prpr-apk
-          path: prpr-client-main/target/aarch64-linux-android/release/apk/prpr-client-main.apk
+    - uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-linux-android
+
+    - name: Setup Android
+      uses: android-actions/setup-android@v3
+      with:
+        packages: 'cmdline-tools;latest,build-tools;33.0.2,ndk;25.2.9519653,android-33'
+
+    - name: Build APK
+      run: |
+        cargo build --release --bin prpr-client-main --target aarch64-linux-android
+        mkdir -p build/outputs/apk/release
+        cp target/aarch64-linux-android/release/prpr-client-main build/outputs/apk/release/prpr.apk
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: prpr-apk
+        path: build/outputs/apk/release/prpr.apk
