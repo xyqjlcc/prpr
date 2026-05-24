@@ -18,19 +18,14 @@ jobs:
       with:
         targets: aarch64-linux-android
 
-    - name: Setup Android
-      uses: android-actions/setup-android@v3
-      with:
-        packages: 'cmdline-tools;latest,build-tools;33.0.2,ndk;25.2.9519653,android-33'
+    - name: Install cargo-apk
+      run: cargo install cargo-apk
 
     - name: Build APK
-      run: |
-        cargo build --release --bin prpr-client-main --target aarch64-linux-android
-        mkdir -p build/outputs/apk/release
-        cp target/aarch64-linux-android/release/prpr-client-main build/outputs/apk/release/prpr.apk
+      run: cargo apk build --release
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: prpr-apk
-        path: build/outputs/apk/release/prpr.apk
+        path: target/android-artifacts/release/apk/*.apk
